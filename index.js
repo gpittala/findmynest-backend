@@ -23,10 +23,12 @@ const io = new Server(server, {
   },
 });
 
+// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use("/uploads", express.static("uploads"));
 
+// Routes
 app.use("/api/users", usersRoutes);
 app.use("/api/listings", listingsRoutes);
 app.use("/api/comments", commentsRoutes);
@@ -34,23 +36,30 @@ app.use("/api/ratings", ratingsRoutes);
 app.use("/api/messages", messagesRoutes);
 app.use("/api/universities", universitiesRoutes);
 
+// Socket.io setup
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
+  // Join a conversation
   socket.on("joinConversation", (conversationId) => {
     socket.join(conversationId);
     console.log(`User joined conversation: ${conversationId}`);
   });
 
+  // Handle message sending
   socket.on("sendMessage", (messageData) => {
-    const { conversationId, content } = messageData;
-    console.log("Message received:", content);
+    const { conversationId, content, senderId } = messageData;
 
+    // Emit the message to the participants in the conversation
     io.to(conversationId).emit("newMessage", {
       conversationId,
       content,
+      senderId,
       createdAt: new Date(),
     });
+
+    // Log the message for debugging
+    console.log(`Message sent to conversation ${conversationId}:`, content);
   });
 
   socket.on("disconnect", () => {
@@ -58,6 +67,7 @@ io.on("connection", (socket) => {
   });
 });
 
+// Start the server
 const PORT = process.env.PORT || 9000;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

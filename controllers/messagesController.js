@@ -36,8 +36,8 @@ const MessagesController = {
 
   createMessage: async (req, res) => {
     try {
-      const { conversationId, content } = req.body;
-      const messageId = await Messages.createMessage(conversationId, content);
+      const { conversationId, senderId, content } = req.body;
+      const messageId = await Messages.createMessage(conversationId, senderId, content);
       res.status(201).json({ messageId });
     } catch (error) {
       console.error("Error creating message:", error);
